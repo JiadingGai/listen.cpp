@@ -5,6 +5,7 @@
 #include <map>
 #include <cassert>
 #include <cfloat>
+#include <omp.h>
 
 template<typename DataType>
 std::vector<float> read_binary(std::string weightFn, int64_t numElements) {
@@ -32,26 +33,28 @@ std::ostream& operator << (std::ostream& os, const std::vector<T>& v)
 }
 
 std::vector<float> cross_correlation(const std::vector<float> &in, const std::vector<float> &w) {
-  std::vector<float> out;
-  assert(in.size() == 3000);
-  assert(w.size() == 3);
+  std::vector<float> out(in.size());
+
+  // Only support odd-numbered kernel size larger than 3.
+  assert(w.size() >= 3 && (w.size() & 0x1) != 0);
+  const auto KS = w.size();
+  const auto HALF = static_cast<int>((KS - 1) / 2);
 
   for (int i = 0; i < in.size(); i++) {
-    auto tmp = in[i] * w[1];
-    if (i - 1 >= 0)
-      tmp += in[i-1] * w[0];
-
-    if (i + 1 < in.size())
-      tmp += in[i+1] * w[2];
-
-    out.push_back(tmp);
+    float tmp = 0.0f;
+    for (int j = -HALF; j <= HALF; j++) {
+      if ((i + j) >= 0 && (i + j) < in.size()) {
+        tmp += in[i + j] * w[HALF + j];
+      }
+    }
+    out[i] = tmp;
   }
 
   return out;
 }
 
 std::vector<float> add_vectors(const std::vector<float>& vec1, const std::vector<float>& vec2) {
-    std::vector<float> result;
+    std::vector<float> result(vec1.size());
 
     // Check if vectors are of the same size
     if (vec1.size() != vec2.size()) {
@@ -60,8 +63,14 @@ std::vector<float> add_vectors(const std::vector<float>& vec1, const std::vector
     }
 
     // Add corresponding elements from both vectors
+    omp_set_num_threads(6);
+    #pragma omp parallel for
     for (size_t i = 0; i < vec1.size(); ++i) {
-        result.push_back(vec1[i] + vec2[i]);
+        result[i] = vec1[i] + vec2[i];
+
+        // FIXME: no multithreading turnt on mac os?
+        if (omp_get_thread_num() > 0)
+          printf("Thread %u works on element %zu\n", omp_get_thread_num(), i);
     }
 
     return result;

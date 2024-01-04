@@ -33,7 +33,8 @@ TEST(WhisperOperatorUnitTests, FirstConv1) {
     max_error = std::abs(gold_conv1[i] - result[i]) > max_error ? std::abs(gold_conv1[i] - result[i]) : max_error;
     /* std::cout << "(gold, result) = " << gold_conv1[i] << ", " << result[i] << "\n"; */
   }
-  /* std::cout << "(SimpleTheoryOfTypes) max_error = " <<max_error << std::endl; */
+  if (max_error >= 6e-6)
+    std::cout << "(SimpleTheoryOfTypes) max_error = " <<max_error << std::endl;
 
   ASSERT_TRUE(max_error < 6e-6);
 }

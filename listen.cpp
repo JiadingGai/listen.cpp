@@ -69,7 +69,7 @@ std::vector<float> add_vectors(const std::vector<float>& vec1, const std::vector
 std::vector<float> conv1d(const std::vector<float> &in, const std::vector<float> &w, const std::vector<float> &bias) {
   // https://pytorch.org/docs/stable/generated/torch.nn.Conv1d.html
   // in : [1, 80, 3000]
-  // w: [80, 384, 3], ks=(3,1), stride=(1,), padding=1
+  // w: [384,80, 3], ks=(3,1), stride=(1,), padding=1
   // b: [384]
   // out: [1, 384, 3000]
 
@@ -79,7 +79,7 @@ std::vector<float> conv1d(const std::vector<float> &in, const std::vector<float>
     for (int oc = 0; oc < 384; oc++) { // out channel dim
       std::vector<float> out_tmp(3000, 0);
       for (int k = 0; k < 80; k++) {
-        std::vector<float> w_piece(w.begin() + k * 384 * 3 + oc * 3, w.begin() + k * 384 * 3 + oc * 3 + 3);
+        std::vector<float> w_piece(w.begin() + oc * 80 * 3 + k * 3, w.begin() + oc * 80 * 3 + k * 3 + 3);
         std::vector<float> input_piece(in.begin() + b * 80 * 3000 + k * 3000, in.begin() + b * 80 * 3000 + k * 3000 + 3000);
         out_tmp = add_vectors(cross_correlation(input_piece, w_piece), out_tmp);
       }
@@ -95,10 +95,7 @@ std::vector<float> conv1d(const std::vector<float> &in, const std::vector<float>
   return out;
 }
 
-
-
 int main() {
-
   // read the weight and bias of conv1
   std::string weight_dir= "/Users/jiadinggai/dev/WHISPER/gaiwhisper/test/model_weights/";
   std::string gold_input_fn = weight_dir + "tiny_en/gold_input.gaibin";

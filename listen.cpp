@@ -4,9 +4,10 @@
 #include <vector>
 #include <map>
 #include <cassert>
+#include <cfloat>
 
 template<typename DataType>
-std::vector<float> read_weights(std::string weightFn, int64_t numElements) {
+std::vector<float> read_binary(std::string weightFn, int64_t numElements) {
   int64_t dataTypeSize = sizeof(DataType);
   int64_t BUFFERSIZE = numElements * dataTypeSize;
   char result_buffer[BUFFERSIZE];
@@ -107,18 +108,25 @@ int main() {
     {conv1_bias_fn, 384},
   };
 
-  const auto input = read_weights<float>(gold_input_fn, 1 * 80 * 3000);
-  const auto conv1_bias = read_weights<float>(conv1_bias_fn, 384);
-  const auto conv1_weight = read_weights<float>(conv1_weight_fn, 384 * 80 * 3);
+  const auto input = read_binary<float>(gold_input_fn, 1 * 80 * 3000);
+  const auto conv1_bias = read_binary<float>(conv1_bias_fn, 384);
+  const auto conv1_weight = read_binary<float>(conv1_weight_fn, 384 * 80 * 3);
   auto result = conv1d(input, conv1_weight, conv1_bias);
 
   /* std::cout << "conv1_bias = " << conv1_bias; */
   /* std::cout << "conv1_weight = " << conv1_weight; */
-  const auto gold_conv1 = read_weights<float>(gold_conv1_fn, 384 * 300);
-  for (int i = 0; i < 10/*gold_conv1.size()*/; i++) {
-    std::cout << "(gold, result) = " << gold_conv1[i] << ", " << result[i] << "\n";
+  const auto gold_conv1 = read_binary<float>(gold_conv1_fn, 384 * 300);
+  float max_error = FLT_MIN;
+  for (int i = 0; i < gold_conv1.size(); i++) {
+    max_error = std::abs(gold_conv1[i] - result[i]) > max_error ? std::abs(gold_conv1[i] - result[i]) : max_error;
+    /* std::cout << "(gold, result) = " << gold_conv1[i] << ", " << result[i] << "\n"; */
   }
-  std::cout << "(SimpleTheoryOfTypes) gold input = " <<  std::vector<float>(input.begin(), input.begin() + 30) << std::endl;
+
+  if (max_error < 1e05)
+    std::cout << "(first conv1) PASS." << std::endl;
+  else
+    std::cout << "(first conv1) FAIL." << std::endl;
+
 
   return 0;
 }

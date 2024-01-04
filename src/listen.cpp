@@ -96,6 +96,7 @@ std::vector<float> conv1d(const std::vector<float> &in, const std::vector<float>
   return out;
 }
 
+#if 0
 int main() {
   // read the weight and bias of conv1
   std::string weight_dir= "/Users/jiadinggai/dev/WHISPER/gaiwhisper/test/model_weights/";
@@ -130,3 +131,4 @@ int main() {
 
   return 0;
 }
+#endif

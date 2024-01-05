@@ -31,5 +31,6 @@ std::ostream& operator << (std::ostream& os, const std::vector<T>& v)
 std::vector<float> cross_correlation(const std::vector<float> &in, const std::vector<float> &w);
 std::vector<float> add_vectors(const std::vector<float>& vec1, const std::vector<float>& vec2);
 std::vector<float> conv1d(const std::vector<float> &in, const std::vector<float> &w, const std::vector<float> &bias);
+std::vector<float> gelu(const std::vector<float> &input);
 
 #endif 

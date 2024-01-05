@@ -6,6 +6,7 @@
 #include <cassert>
 #include <cfloat>
 #include <omp.h>
+#include <cmath>
 
 template<typename DataType>
 std::vector<float> read_binary(std::string weightFn, int64_t numElements) {
@@ -74,6 +75,19 @@ std::vector<float> add_vectors(const std::vector<float>& vec1, const std::vector
     }
 
     return result;
+}
+
+// GELU activation function implementation
+static float gelu_scalar(float x) {
+  return 0.5 * x * (1.0 + std::tanh(sqrt(2.0 / M_PI) * (x + 0.044715 * x * x * x)));
+}
+
+std::vector<float> gelu(const std::vector<float> &input) {
+  std::vector<float> result(input.size(), 0);
+  for (int i = 0; i < input.size(); i++) {
+    result[i] = gelu_scalar(input[i]);
+  }
+  return result;
 }
 
 std::vector<float> conv1d(const std::vector<float> &in, const std::vector<float> &w, const std::vector<float> &bias) {

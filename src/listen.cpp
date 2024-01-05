@@ -33,22 +33,27 @@ std::ostream& operator << (std::ostream& os, const std::vector<T>& v)
   return os;
 }
 
-std::vector<float> cross_correlation(const std::vector<float> &in, const std::vector<float> &w) {
-  std::vector<float> out(in.size());
-
+std::vector<float> cross_correlation(const std::vector<float> &in, const std::vector<float> &w, int stride) {
   // Only support odd-numbered kernel size larger than 3.
   assert(w.size() >= 3 && (w.size() & 0x1) != 0);
   const auto KS = w.size();
   const auto HALF = static_cast<int>((KS - 1) / 2);
 
-  for (int i = 0; i < in.size(); i++) {
+  int Lin = in.size();
+  // FIXME: need to support padding and dilation properly.
+  int padding = 1, dilation = 1;
+  int Lout = int((Lin + 2 * padding - dilation * (KS - 1) - 1) / stride + 1);
+  std::vector<float> out(Lout);
+
+  int index = 0;
+  for (int i = 0; i < in.size(); i+=stride) {
     float tmp = 0.0f;
     for (int j = -HALF; j <= HALF; j++) {
       if ((i + j) >= 0 && (i + j) < in.size()) {
         tmp += in[i + j] * w[HALF + j];
       }
     }
-    out[i] = tmp;
+    out[index++] = tmp;
   }
 
   return out;
@@ -59,8 +64,8 @@ std::vector<float> add_vectors(const std::vector<float>& vec1, const std::vector
 
     // Check if vectors are of the same size
     if (vec1.size() != vec2.size()) {
-        std::cerr << "Vectors must be of the same size for addition." << std::endl;
-        return result; // Return an empty vector if sizes are different
+        std::cerr << "Vectors must be of the same size for addition: " << vec1.size() << " versus " << vec2.size() << std::endl;
+        assert(false);
     }
 
     // Add corresponding elements from both vectors
@@ -90,29 +95,38 @@ std::vector<float> gelu(const std::vector<float> &input) {
   return result;
 }
 
-std::vector<float> conv1d(const std::vector<float> &in, const std::vector<float> &w, const std::vector<float> &bias) {
+std::vector<float> conv1d(const std::vector<float> &in, const std::vector<int> &in_shape, const std::vector<float> &w, const std::vector<int> &w_shape, const std::vector<float> &bias, int stride) {
   // https://pytorch.org/docs/stable/generated/torch.nn.Conv1d.html
   // in : [1, 80, 3000]
   // w: [384,80, 3], ks=(3,1), stride=(1,), padding=1
   // b: [384]
   // out: [1, 384, 3000]
 
+  int N = in_shape[0];//batch size, 1
+  int Cin = in_shape[1];//in channels, 80
+  int Lin = in_shape[2];// input len, 3000
+  assert(w_shape[0] == Cin);
+  int Cout = w_shape[1];// out channels, 384
+  int KS = w_shape[2]; // kernel width, 3
   //out shape = [1, 384, 3000]
-  std::vector<float> out(1*384*3000);
-  for (int b = 0; b < 1; b++) { //batch dim
-    for (int oc = 0; oc < 384; oc++) { // out channel dim
-      std::vector<float> out_tmp(3000, 0);
-      for (int k = 0; k < 80; k++) {
-        std::vector<float> w_piece(w.begin() + oc * 80 * 3 + k * 3, w.begin() + oc * 80 * 3 + k * 3 + 3);
-        std::vector<float> input_piece(in.begin() + b * 80 * 3000 + k * 3000, in.begin() + b * 80 * 3000 + k * 3000 + 3000);
-        out_tmp = add_vectors(cross_correlation(input_piece, w_piece), out_tmp);
+  // FIXME: need to support padding and dilation properly.
+  int padding = 1, dilation = 1;
+  int Lout = int((Lin + 2 * padding - dilation * (KS - 1) - 1) / stride + 1);
+  std::vector<float> out(N * Cout * Lout);
+  for (int b = 0; b < N; b++) { //batch dim
+    for (int oc = 0; oc < Cout; oc++) { // out channel dim
+      std::vector<float> out_tmp(Lout, 0);
+      for (int k = 0; k < Cin; k++) {
+        std::vector<float> w_piece(w.begin() + oc * Cin * KS + k * KS, w.begin() + oc * Cin * KS + k * KS + KS);
+        std::vector<float> input_piece(in.begin() + b * Cin * Lin + k * Lin, in.begin() + b * Cin * Lin + k * Lin + Lin);
+        out_tmp = add_vectors(cross_correlation(input_piece, w_piece, stride), out_tmp);
       }
       // add bias
       for (auto &x : out_tmp) {
         x += bias[oc];
       }
       //save out_tmp back to out.
-      std::copy(out_tmp.begin(), out_tmp.end(), out.begin() + b * 384 * 3000 + oc * 3000);
+      std::copy(out_tmp.begin(), out_tmp.end(), out.begin() + b * Cout * Lout + oc * Lout);
     }
   }
 

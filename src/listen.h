@@ -1,5 +1,5 @@
-#ifndef LISTEN_H 
-#define LISTEN_H 
+#ifndef LISTEN_H
+#define LISTEN_H
 
 #include <fstream>
 
@@ -28,9 +28,9 @@ std::ostream& operator << (std::ostream& os, const std::vector<T>& v)
   return os;
 }
 
-std::vector<float> cross_correlation(const std::vector<float> &in, const std::vector<float> &w);
+std::vector<float> cross_correlation(const std::vector<float> &in, const std::vector<float> &w, int stride=1);
 std::vector<float> add_vectors(const std::vector<float>& vec1, const std::vector<float>& vec2);
-std::vector<float> conv1d(const std::vector<float> &in, const std::vector<float> &w, const std::vector<float> &bias);
+std::vector<float> conv1d(const std::vector<float> &in, const std::vector<int> &in_shape, const std::vector<float> &w, const std::vector<int> &w_shape, const std::vector<float> &bias, int stride=1);
 std::vector<float> gelu(const std::vector<float> &input);
 
-#endif 
+#endif

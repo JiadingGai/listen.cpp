@@ -60,7 +60,7 @@ std::vector<float> cross_correlation(const std::vector<float> &in, const std::ve
 }
 
 std::vector<float> add_vectors(const std::vector<float>& vec1, const std::vector<float>& vec2) {
-    std::vector<float> result(vec1.size());
+    std::vector<float> result(vec1.size(), 0);
 
     // Check if vectors are of the same size
     if (vec1.size() != vec2.size()) {
@@ -108,25 +108,57 @@ std::vector<float> conv1d(const std::vector<float> &in, const std::vector<int> &
   assert(w_shape[0] == Cin);
   int Cout = w_shape[1];// out channels, 384
   int KS = w_shape[2]; // kernel width, 3
+  // Only support odd-numbered kernel size larger than 3.
+  const auto HALF = static_cast<int>((KS - 1) / 2);
   //out shape = [1, 384, 3000]
   // FIXME: need to support padding and dilation properly.
   int padding = 1, dilation = 1;
   int Lout = int((Lin + 2 * padding - dilation * (KS - 1) - 1) / stride + 1);
-  std::vector<float> out(N * Cout * Lout);
+  std::vector<float> out(N * Cout * Lout, 0);
   for (int b = 0; b < N; b++) { //batch dim
     for (int oc = 0; oc < Cout; oc++) { // out channel dim
-      std::vector<float> out_tmp(Lout, 0);
+      /* std::vector<float> out_tmp(Lout, 0); */
       for (int k = 0; k < Cin; k++) {
+#if 0
         std::vector<float> w_piece(w.begin() + oc * Cin * KS + k * KS, w.begin() + oc * Cin * KS + k * KS + KS);
         std::vector<float> input_piece(in.begin() + b * Cin * Lin + k * Lin, in.begin() + b * Cin * Lin + k * Lin + Lin);
         out_tmp = add_vectors(cross_correlation(input_piece, w_piece, stride), out_tmp);
+#else
+        auto B = in.begin() + b * Cin * Lin + k * Lin;
+        auto E = B + Lin;
+        auto I = B;
+        auto Bw = w.begin() + oc * Cin * KS + k * KS;
+        int index = 0;
+        auto outIter = out.begin() + b * Cout * Lout + oc * Lout;
+        for (int j = -HALF; j <= HALF; j++) {
+        for (int i = 0; I != E; i+=stride, I+=stride) {
+            if ((i + j) >= 0 && (i + j) < Lin) {
+              *(outIter + index) += *(I+j) * *(Bw + HALF + j);
+            }
+          }
+          index++;
+        }
+
+//  int index = 0;
+//  for (int i = 0; i < in.size(); i+=stride) {
+//    float tmp = 0.0f;
+//    for (int j = -HALF; j <= HALF; j++) {
+//      if ((i + j) >= 0 && (i + j) < in.size()) {
+//        tmp += in[i + j] * w[HALF + j];
+//      }
+//    }
+//    out[index++] = tmp;
+//  }
+
+
+#endif
       }
       // add bias
-      for (auto &x : out_tmp) {
-        x += bias[oc];
-      }
+      //for (auto &x : out_tmp) {
+      //  x += bias[oc];
+      //}
       //save out_tmp back to out.
-      std::copy(out_tmp.begin(), out_tmp.end(), out.begin() + b * Cout * Lout + oc * Lout);
+      /* std::copy(out_tmp.begin(), out_tmp.end(), out.begin() + b * Cout * Lout + oc * Lout); */
     }
   }
 

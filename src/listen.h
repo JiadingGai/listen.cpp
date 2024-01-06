@@ -4,6 +4,18 @@
 #include <fstream>
 #include <gperftools/profiler.h>
 
+#define Entry1D(b,i) (*((b->entries)+i))
+#define Entry2D(x,i,j)   (*((x->entries)+i*(x->width)+j))
+#define Entry3D(d,i,j,k) (*((d->entries)+k*(d->width)*(d->height)+i*(d->width)+j))
+
+typedef struct
+{
+  int width;
+  int height;
+  int depth;
+  float* entries;
+} MATRIX_T;
+
 template<typename DataType>
 std::vector<float> read_binary(std::string weightFn, int64_t numElements) {
   int64_t dataTypeSize = sizeof(DataType);

@@ -7,31 +7,7 @@
 #include <cfloat>
 #include <omp.h>
 #include <cmath>
-
-template<typename DataType>
-std::vector<float> read_binary(std::string weightFn, int64_t numElements) {
-  int64_t dataTypeSize = sizeof(DataType);
-  int64_t BUFFERSIZE = numElements * dataTypeSize;
-  char result_buffer[BUFFERSIZE];
-  std::ifstream is(weightFn, std::ios::in | std::ios::binary);
-  assert(is && "input file not found!");
-  is.read(result_buffer, BUFFERSIZE);
-  std::vector<float> result;
-  for (int i = 0; i < numElements; i++) {
-    result.push_back(reinterpret_cast<float *>(result_buffer)[i]);
-  }
-
-  return result;
-}
-
-template < class T >
-std::ostream& operator << (std::ostream& os, const std::vector<T>& v)
-{
-  os << "[";
-  for (typename std::vector<T>::const_iterator ii = v.begin(); ii != v.end(); ++ii) os << ", " << *ii;
-  os << "]\n";
-  return os;
-}
+#include "listen.h"
 
 std::vector<float> cross_correlation(const std::vector<float> &in, const std::vector<float> &w, int stride) {
   // Only support odd-numbered kernel size larger than 3.
@@ -60,7 +36,7 @@ std::vector<float> cross_correlation(const std::vector<float> &in, const std::ve
 }
 
 std::vector<float> add_vectors(const std::vector<float>& vec1, const std::vector<float>& vec2) {
-    std::vector<float> result(vec1.size());
+    std::vector<float> result(vec1.size(), 0);
 
     // Check if vectors are of the same size
     if (vec1.size() != vec2.size()) {
@@ -112,7 +88,7 @@ std::vector<float> conv1d(const std::vector<float> &in, const std::vector<int> &
   // FIXME: need to support padding and dilation properly.
   int padding = 1, dilation = 1;
   int Lout = int((Lin + 2 * padding - dilation * (KS - 1) - 1) / stride + 1);
-  std::vector<float> out(N * Cout * Lout);
+  std::vector<float> out(N * Cout * Lout, 0);
   for (int b = 0; b < N; b++) { //batch dim
     for (int oc = 0; oc < Cout; oc++) { // out channel dim
       std::vector<float> out_tmp(Lout, 0);
@@ -132,6 +108,11 @@ std::vector<float> conv1d(const std::vector<float> &in, const std::vector<int> &
 
   return out;
 }
+
+void conv1d_c(MATRIX_T *out, MATRIX_T *in, MATRIX_T *w, MATRIX_T *bias, int stride) {
+
+}
+
 
 #if 0
 int main() {

@@ -2,6 +2,7 @@
 #define LISTEN_H
 
 #include <fstream>
+#include <gperftools/profiler.h>
 
 template<typename DataType>
 std::vector<float> read_binary(std::string weightFn, int64_t numElements) {

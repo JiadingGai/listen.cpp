@@ -8,6 +8,7 @@ find_package(OpenMP REQUIRED)
 
 set (CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(USE_PROFILER ON)
 add_compile_definitions("WHISPER_SOURCE_ROOT=${CMAKE_SOURCE_DIR}")
 
 # Add -Wall flag to compiler options

@@ -4,6 +4,46 @@
 #define STRING(x) #x
 #define XSTRING(x) STRING(x)
 
+TEST(WhisperOperatorUnitTests, Conv1_pureC) {
+  // whisper source root is passed from cmake; see add_compile_definition in CMakeLists.txt
+  /* std::cout << XSTRING(WHISPER_SOURCE_ROOT) << '\n'; */
+  std::string whisper_home = XSTRING(WHISPER_SOURCE_ROOT);
+
+  // read the weight and bias of conv1
+  std::string weight_dir= whisper_home + "/test/model_weights/";
+  std::string gold_input_fn = weight_dir + "tiny_en/gold_input.gaibin";
+  std::string conv1_weight_fn = weight_dir + "tiny_en/encoder_conv1_weight.gaibin";
+  std::string conv1_bias_fn = weight_dir + "tiny_en/encoder_conv1_bias.gaibin";
+  std::string gold_conv1_fn = "/Users/jiadinggai/dev/WHISPER/gaiwhisper/test/gold_conv1.bin";
+  std::map<std::string, int64_t> modelInfo {
+    {conv1_weight_fn, 384 * 80 * 3},
+    {conv1_bias_fn, 384},
+  };
+
+  const auto input = read_binary_c<float>(gold_input_fn, 1 * 80 * 3000, {1, 80, 3000});
+  const auto conv1_bias = read_binary_c<float>(conv1_bias_fn, 384, {384});
+  const auto conv1_weight = read_binary_c<float>(conv1_weight_fn, 384 * 80 * 3, {384, 80, 3});
+
+  MATRIX_T *result =  Matrix_Allocate(1, 384, 3000);
+  conv1d_c(result, input, conv1_weight, conv1_bias, 1);
+
+  /* std::cout << "conv1_bias = " << conv1_bias; */
+  /* std::cout << "conv1_weight = " << conv1_weight; */
+  const auto gold_conv1 = read_binary_c<float>(gold_conv1_fn, 384 * 3000, {1, 384, 3000});
+  const auto [max_error, max_val, min_val] = compare_matrix(gold_conv1, result);
+  const float atol = 1e-5;
+  if (max_error >= atol) {
+    std::cout << "(SimpleTheoryOfTypes) max_error = " << max_error << " value range in gold = [" << min_val << ", " << max_val << "]\n";
+  }
+
+  // DEBUG
+  const auto [max_, min_] = compute_range(result);
+  std::cout << "(SimpleTheoryOfTypes) value range in result = [" << min_ << ", " << max_ << "]\n";
+
+  ASSERT_TRUE(max_error < atol);
+}
+
+
 TEST(WhisperOperatorUnitTests, Conv1GeluConv2Gelu) {
   // whisper source root is passed from cmake; see add_compile_definition in CMakeLists.txt
   /* std::cout << XSTRING(WHISPER_SOURCE_ROOT) << '\n'; */

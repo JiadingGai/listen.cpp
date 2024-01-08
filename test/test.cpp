@@ -24,7 +24,7 @@ TEST(WhisperOperatorUnitTests, Conv1_pureC) {
   const auto conv1_bias = read_binary_c<float>(conv1_bias_fn, 384, {384});
   const auto conv1_weight = read_binary_c<float>(conv1_weight_fn, 384 * 80 * 3, {384, 80, 3});
 
-  MATRIX_T *result =  Matrix_Allocate(1, 384, 3000);
+  TENSOR_T *result =  Matrix_Allocate(1, 384, 3000);
   conv1d_c(result, input, conv1_weight, conv1_bias, 1);
 
   /* std::cout << "conv1_bias = " << conv1_bias; */

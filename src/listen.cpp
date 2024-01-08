@@ -132,7 +132,7 @@ std::vector<float> conv1d(const std::vector<float> &in, const std::vector<int> &
   return out;
 }
 
-void conv1d_c(MATRIX_T *out, MATRIX_T *in, MATRIX_T *w, MATRIX_T *bias, int stride) {
+void conv1d_c(TENSOR_T *out, TENSOR_T *in, TENSOR_T *w, TENSOR_T *bias, int stride) {
   int N = out->dim0;
   int Cin = out->dim1;
   int Lin = out->dim2;
@@ -183,8 +183,8 @@ void conv1d_c(MATRIX_T *out, MATRIX_T *in, MATRIX_T *w, MATRIX_T *bias, int stri
   }
 }
 
-MATRIX_T* Matrix_Allocate(int width, int height, int depth) {
-    MATRIX_T* a_matrix = (MATRIX_T*) malloc(sizeof(MATRIX_T));
+TENSOR_T* Matrix_Allocate(int width, int height, int depth) {
+    TENSOR_T* a_matrix = (TENSOR_T*) malloc(sizeof(TENSOR_T));
     a_matrix->dim0 = width;
     a_matrix->dim1 = height;
     a_matrix->dim2 = depth;
@@ -194,7 +194,7 @@ MATRIX_T* Matrix_Allocate(int width, int height, int depth) {
     return a_matrix;
 }
 
-std::tuple<float, float, float> compare_matrix(MATRIX_T *x, MATRIX_T *y) {
+std::tuple<float, float, float> compare_matrix(TENSOR_T *x, TENSOR_T *y) {
   assert(x->dim0 == y->dim0);
   assert(x->dim1 == y->dim1);
   assert(x->dim2 == y->dim2);
@@ -217,7 +217,7 @@ std::tuple<float, float, float> compare_matrix(MATRIX_T *x, MATRIX_T *y) {
   return std::make_tuple(max_error, max_val, min_val);
 }
 
-std::tuple<float, float> compute_range(MATRIX_T *x) {
+std::tuple<float, float> compute_range(TENSOR_T *x) {
   float max_val = FLT_MIN;
   float min_val = FLT_MAX;
   for (int i = 0; i < x->dim0; i++) {

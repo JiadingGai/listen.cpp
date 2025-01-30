@@ -31,4 +31,4 @@ include_directories(src)
 # Add subdirectories
 add_subdirectory(src)
 add_subdirectory(test)
-add_subdirectory(examples/cuda)
+add_subdirectory(examples)

@@ -45,7 +45,7 @@ int main()
     16, // AlignmentB 
     cutlass::arch::OpMultiplyAddMixedInputUpcast,
     cutlass::ComplexTransform::kNone,
-    cutlass::ComplexTransform::kNone,
+    cutlass::ComplexTransform::kNone
   >;
 
   EXPECT_TRUE(test::gemm::device::TestAllGemmUniversal<Gemm>());

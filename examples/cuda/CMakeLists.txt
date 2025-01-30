@@ -10,7 +10,7 @@ set(CUTLASS_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/cutlass/include)
 
 # Detect GPU architecture dynamically
 execute_process(
-    COMMAND ${CUDA_NVCC_EXECUTABLE} -arch=sm_00 --run "cudaDeviceProp prop; cudaGetDeviceProperties(&prop, 0); printf(\"%d%d\\n\", prop.major, prop.minor);"
+    COMMAND ${CUDA_NVCC_EXECUTABLE} --run "cudaDeviceProp prop; cudaGetDeviceProperties(&prop, 0); printf(\"%d%d\\n\", prop.major, prop.minor);"
     OUTPUT_VARIABLE GPU_ARCH
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )

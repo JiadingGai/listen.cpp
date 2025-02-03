@@ -2,7 +2,22 @@ cmake_minimum_required(VERSION 3.18)
 project(cuda_examples LANGUAGES CUDA CXX)
 
 # Enable CUDA
-find_package(CUDA REQUIRED)
+enable_language(CUDA)
+find_package(CUDAToolkit REQUIRED)
+
+if (CUDAToolkit_FOUND)
+  message(STATUS "CUDA found on this system.")
+endif()
+message(STATUS "${CUDAToolkit_FOUND}")
+## DEBUG: print all the variables that starts with "CUDAToolkit_", found by the above find_package(CUDAToolkit REQUIRED)
+if (ON)
+  get_cmake_property(_variableNames VARIABLES)
+  foreach (_variableName ${_variableNames})
+    if(_variableName MATCHES "^CUDAToolkit_")
+      message(STATUS "${_variableName}=${${_variableName}}")
+    endif()
+  endforeach()
+endif()
 
 # Set GoogleTest and CUTLASS include directories from the submodules
 set(GOOGLETEST_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/googletest/googletest/include)
@@ -10,7 +25,7 @@ set(CUTLASS_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/cutlass/include)
 
 # Detect GPU architecture dynamically
 execute_process(
-    COMMAND ${CUDA_NVCC_EXECUTABLE} --run "cudaDeviceProp prop; cudaGetDeviceProperties(&prop, 0); printf(\"%d%d\\n\", prop.major, prop.minor);"
+    COMMAND ${CUDAToolkit_TARGET_DIR}/bin/__nvcc_device_query
     OUTPUT_VARIABLE GPU_ARCH
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
@@ -32,7 +47,7 @@ set_target_properties(binary_instrumentation PROPERTIES
     CUDA_SEPARABLE_COMPILATION ON
     CXX_STANDARD 17
 )
-target_link_libraries(binary_instrumentation PRIVATE CUDA::cudart)
+# target_link_libraries(binary_instrumentation PRIVATE CUDA::cudart)
 
 # Add halfA_int8_mixed example (CUTLASS + GoogleTest)
 add_executable(halfA_int8_mixed halfA_int8_mixed.cu)
@@ -47,8 +62,7 @@ target_include_directories(halfA_int8_mixed PRIVATE
 
 # Link GoogleTest from CMAKE_SOURCE_DIR
 target_link_libraries(halfA_int8_mixed PRIVATE
-    CUDA::cudart
-    ${CMAKE_SOURCE_DIR}/googletest/build/lib/libgtest.a
+  ${CMAKE_BINARY_DIR}/lib/libgtest.a
 )
 
 # Set CUDA architecture flags dynamically

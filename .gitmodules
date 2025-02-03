@@ -4,6 +4,3 @@
 [submodule "cutlass"]
 	path = cutlass
 	url = https://github.com/NVIDIA/cutlass.git
-[submodule "gperftools"]
-	path = gperftools
-	url = https://github.com/gperftools/gperftools.git

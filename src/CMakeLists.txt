@@ -1,6 +1,6 @@
 # Find google profiler
-find_library(PROFILER_PATH NAMES profiler)
-message(WARNING ${PROFILER_PATH})
+# find_library(PROFILER_PATH NAMES profiler)
+# message(WARNING ${PROFILER_PATH})
 
 set(SOURCE_FILES listen.cpp)
 add_library(listen_lib ${SOURCE_FILES})

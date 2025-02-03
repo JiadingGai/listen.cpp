@@ -71,7 +71,7 @@ TEST(WhisperOperatorUnitTests, Conv1GeluConv2Gelu) {
   const auto input = read_binary<float>(gold_input_fn, 1 * 80 * 3000);
 
   // Start profiling
-  ProfilerStart("__profile_output.prof");
+  // ProfilerStart("__profile_output.prof");
 
   // conv1 + relu
   const auto conv1_bias = read_binary<float>(conv1_bias_fn, 384);
@@ -86,7 +86,7 @@ TEST(WhisperOperatorUnitTests, Conv1GeluConv2Gelu) {
   const auto result = gelu(tmp1);
 
   // Stop profiling
-  ProfilerStop();
+  // ProfilerStop();
 
   const auto gold_conv2 = read_binary<float>(gold_output_fn, 384 * 1500);
   float max_error = FLT_MIN;

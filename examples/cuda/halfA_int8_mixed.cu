@@ -91,51 +91,52 @@ void test_s4t_s8n_s32t()
 
 void test_s8t_s8n_s32t()
 {
-  using ElementOutput = int32_t;
-  using ElementAccumulator = int32_t;
-  using ElementComputeEpilogue = int32_t;
-  using ElementInputA = int8_t;
-  using ElementInputB = int8_t;
-
-  using LayoutInputA = cutlass::layout::RowMajor;
-  using LayoutInputB = cutlass::layout::ColumnMajor;
-  using LayoutOutput = cutlass::layout::RowMajor;
-
-  using MMAOp = cutlass::arch::OpClassTensorOp;
-  using SmArch = cutlass::arch::Sm80;
-
-  using ShapeMMAThreadBlock = cutlass::gemm::GemmShape<64, 64, 64>;
-  using ShapeMMAWarp = cutlass::gemm::GemmShape<32, 32, 64>;
-  using ShapeMMAOp = cutlass::gemm::GemmShape<8, 8, 16>;
-  using SwizzleThreadBlock = cutlass::gemm::threadblock::GemmIdentityThreadblockSwizzle<>;
-
-  using EpilogueOp = cutlass::epilogue::thread::LinearCombination<
-    ElementOutput,
-    128 / cutlass::sizeof_bits<ElementOutput>::value,
-    ElementAccumulator,
-    ElementComputeEpilogue,
-    cutlass::epilogue::thrread::ScaleType::OnlyAlphaPerChannelScaling
-  >;
-
-  constexpr int NumStages = 10;
-
-  using Gemm = cutlass::gemm::device::Gemm<
-    ElementInputA,
-    LayoutInputA,
-    ElementInputB,
-    LayoutInputB,
-    ElementOutput,
-    LayoutOutput,
-    ElementAccumulator,
-    MMAOp,
-    SmArch,
-    ShapeMMAThreadBlock,
-    ShapeMMAWarp,
-    ShapeMMAOp,
-    EpilogueOp,
-    SwizzleThreadBlock,
-    NumStages>;
-
+    using ElementOutput = int32_t;
+    using ElementAccumulator = int32_t;
+    using ElementComputeEpilogue = int32_t;
+    using ElementInputA = int8_t;
+    using ElementInputB = int8_t;
+  
+    using LayoutInputA = cutlass::layout::RowMajor;
+    using LayoutInputB = cutlass::layout::ColumnMajor;
+    using LayoutOutput = cutlass::layout::RowMajor;
+  
+    using MMAOp = cutlass::arch::OpClassTensorOp;
+    using SmArch = cutlass::arch::Sm80;
+  
+    using ShapeMMAThreadBlock = cutlass::gemm::GemmShape<64, 64, 64>;
+    using ShapeMMAWarp = cutlass::gemm::GemmShape<32, 32, 64>;
+    using ShapeMMAOp = cutlass::gemm::GemmShape<8, 8, 16>;
+    using SwizzleThreadBlock = cutlass::gemm::threadblock::GemmIdentityThreadblockSwizzle<>;
+  
+    using EpilogueOp = cutlass::epilogue::thread::LinearCombination<
+      ElementOutput,
+      128 / cutlass::sizeof_bits<ElementOutput>::value,
+      ElementAccumulator,
+      ElementComputeEpilogue,
+      cutlass::epilogue::thread::ScaleType::OnlyAlphaPerChannelScaling
+    >;
+  
+    constexpr int NumStages = 10;
+  
+    using Gemm = cutlass::gemm::device::GemmUniversal<
+      ElementInputA,
+      LayoutInputA,
+      ElementInputB,
+      LayoutInputB,
+      ElementOutput,
+      LayoutOutput,
+      ElementAccumulator,
+      MMAOp,
+      SmArch,
+      ShapeMMAThreadBlock,
+      ShapeMMAWarp,
+      ShapeMMAOp,
+      EpilogueOp,
+      SwizzleThreadBlock,
+      NumStages
+    >;
+  
     EXPECT_TRUE(test::gemm::device::TestAllGemmUniversal<Gemm>());
 }
 

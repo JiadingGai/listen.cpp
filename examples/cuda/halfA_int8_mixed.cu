@@ -16,7 +16,7 @@
 
 // nvcc -o __gai gai_demo.cu -I cutlass/include -I cutlass/tools/util/include -I cutlass/test/unit/gemm/device --expt-relaxed-constexpr -I build/_deps/googletest-src/googletest/include -L build/lib -lgtest -arch=compute_80 -code=sm_80
 
-int test_f16t_s8n()
+void test_f16t_s8n()
 {
   // f16t_s8n
   //gemm_universal_f16t_s8n_f16t_mixed_input_tensor_op_f32_sm80.cu
@@ -54,7 +54,7 @@ int test_f16t_s8n()
   EXPECT_TRUE(test::gemm::device::TestAllGemmUniversal<Gemm>());
 }
 
-int test_s4t_s8n_s32t()
+void test_s4t_s8n_s32t()
 {
   using ElementA = cutlass::int4b_t;
   using ElementB = int8_t;

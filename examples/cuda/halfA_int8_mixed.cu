@@ -54,12 +54,12 @@ int test_f16t_s8n()
   EXPECT_TRUE(test::gemm::device::TestAllGemmUniversal<Gemm>());
 }
 
-int main()
+int test_s4t_s8n_s32t()
 {
-  using ElementA = cutlass::half_t;
+  using ElementA = cutlass::int4b_t;
   using ElementB = int8_t;
-  using ElementOutput = float;
-  using ElementAccumulator = float;
+  using ElementOutput = int32_t;
+  using ElementAccumulator = int32_t;
 
   using Gemm = cutlass::gemm::device::GemmUniversal<
     ElementA,
@@ -73,7 +73,7 @@ int main()
     cutlass::arch::Sm80,
     cutlass::gemm::GemmShape<128, 128, 64>,
     cutlass::gemm::GemmShape<64, 64, 64>,
-    cutlass::gemm::GemmShape<16, 8, 16>,
+    cutlass::gemm::GemmShape<16, 8, 32>,
       cutlass::epilogue::thread::LinearCombination<
         ElementOutput, 128 / cutlass::sizeof_bits<ElementOutput>::value,
         ElementAccumulator, ElementAccumulator>,
@@ -87,6 +87,12 @@ int main()
   >;
 
   EXPECT_TRUE(test::gemm::device::TestAllGemmUniversal<Gemm>());
+}
+
+int main()
+{
+  test_s4t_s8n_s32t();
+  test_f16t_s8n();
 
 #if 0
   test::gemm::device::TestAllGemmUniversal<Gemm>();
@@ -108,7 +114,5 @@ int main()
   );
 #endif
 
-
-  test_f16t_s8n();
   return 0;
 }

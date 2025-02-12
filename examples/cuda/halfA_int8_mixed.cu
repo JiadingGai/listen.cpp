@@ -16,6 +16,44 @@
 
 // nvcc -o __gai gai_demo.cu -I cutlass/include -I cutlass/tools/util/include -I cutlass/test/unit/gemm/device --expt-relaxed-constexpr -I build/_deps/googletest-src/googletest/include -L build/lib -lgtest -arch=compute_80 -code=sm_80
 
+int test_f16t_s8n()
+{
+  // f16t_s8n
+  //gemm_universal_f16t_s8n_f16t_mixed_input_tensor_op_f32_sm80.cu
+  // D = alpha x AB + beta x C
+  using ElementA = cutlass::half_t;
+  using ElementB = int8_t;
+  using ElementOutput = cutlass::half_t;
+  using ElementAccumulator = float;
+
+  using Gemm = cutlass::gemm::device::GemmUniversal<
+    ElementA,
+    cutlass::layout::RowMajor,
+    ElementB,
+    cutlass::layout::ColumnMajor,
+    ElementOutput,
+    cutlass::layout::RowMajor,
+    ElementAccumulator,
+    cutlass::arch::OpClassTensorOp,
+    cutlass::arch::Sm80,
+    cutlass::gemm::GemmShape<128, 128, 64>,
+    cutlass::gemm::GemmShape<64, 64, 64>,
+    cutlass::gemm::GemmShape<16, 8, 16>,
+      cutlass::epilogue::thread::LinearCombination<
+          ElementOutput, 128 / cutlass::sizeof_bits<ElementOutput>::value,
+          ElementAccumulator, ElementAccumulator>,
+    cutlass::gemm::threadblock::GemmIdentityThreadblockSwizzle<>,
+    4,  // Stages
+    8,  // AlignmentA
+    16, // AlignmentB
+    cutlass::arch::OpMultiplyAddMixedInputUpcast,
+    cutlass::ComplexTransform::kNone,
+    cutlass::ComplexTransform::kNone
+  >;
+  
+  EXPECT_TRUE(test::gemm::device::TestAllGemmUniversal<Gemm>());
+}
+
 int main()
 {
   using ElementA = cutlass::half_t;
@@ -69,6 +107,8 @@ int main()
       cutlass::from_real<ElementCompute>(beta)
   );
 #endif
-  
+
+
+  test_f16t_s8n();
   return 0;
 }

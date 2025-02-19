@@ -65,10 +65,10 @@ target_link_libraries(halfA_int8_mixed PRIVATE
   ${CMAKE_BINARY_DIR}/lib/libgtest.a
 )
 
-# Add sgemm_sgm80_cris example
-add_executable(sgemm_sgm80_cris sgemm_sgm80_cris.cu)
+# Add sgemm_sm80_cris example
+add_executable(sgemm_sm80_cris sgemm_sm80_cris.cu)
 
-target_include_directories(sgemm_sgm80_cris PRIVATE
+target_include_directories(sgemm_sm80_cris PRIVATE
     ${CUTLASS_INCLUDE_DIR}
     ${CMAKE_SOURCE_DIR}/cutlass/tools/util/include
     ${CMAKE_SOURCE_DIR}/cutlass/test/unit/gemm/device
@@ -76,7 +76,7 @@ target_include_directories(sgemm_sgm80_cris PRIVATE
 )
 
 # Set CUDA architecture flags dynamically
-foreach(target binary_instrumentation halfA_int8_mixed sgemm_sgm80_cris)
+foreach(target binary_instrumentation halfA_int8_mixed sgemm_sm80_cris)
     target_compile_options(${target} PRIVATE
         $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr -arch=${COMPUTE_CAPABILITY} -code=${SM_CAPABILITY} -lineinfo --verbose --keep>
     )

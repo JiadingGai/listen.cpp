@@ -75,8 +75,18 @@ target_include_directories(sgemm_sm80_cris PRIVATE
     ${GOOGLETEST_INCLUDE_DIR}
 )
 
+# Add gtc2020_tensorcore_primer example
+add_executable(gtc2020_tensorcore_primer gtc2020_tensorcore_primer.cu)
+
+target_include_directories(gtc2020_tensorcore_primer PRIVATE
+    ${CUTLASS_INCLUDE_DIR}
+    ${CMAKE_SOURCE_DIR}/cutlass/tools/util/include
+    ${CMAKE_SOURCE_DIR}/cutlass/test/unit/gemm/device
+    ${GOOGLETEST_INCLUDE_DIR}
+)
+
 # Set CUDA architecture flags dynamically
-foreach(target binary_instrumentation halfA_int8_mixed sgemm_sm80_cris)
+foreach(target binary_instrumentation halfA_int8_mixed sgemm_sm80_cris gtc2020_tensorcore_primer)
     target_compile_options(${target} PRIVATE
         $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr -arch=${COMPUTE_CAPABILITY} -code=${SM_CAPABILITY} -lineinfo --verbose --keep>
     )

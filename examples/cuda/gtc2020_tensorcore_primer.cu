@@ -2,6 +2,8 @@
 // 1. https://www.nvidia.com/en-us/on-demand/session/gtcsj20-s21745/ 
 // 2. http://giantpandacv.com/project/CUDA/%E4%B9%B1%E8%B0%88CUTLASS%20GTC2020%20SLIDES/
 
+// nvcc gtc2020_tensorcore_primer.cu -arch=compute_75 -code=sm_80 -keep --verbose
+
 #include "stdio.h"
 #include "stdint.h"
 #include "cuda_fp16.h"

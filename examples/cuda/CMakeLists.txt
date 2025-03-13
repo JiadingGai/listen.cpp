@@ -30,13 +30,19 @@ execute_process(
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
+# if(GPU_ARCH)
+#     set(COMPUTE_CAPABILITY "compute_${GPU_ARCH}")
+#     set(SM_CAPABILITY "sm_${GPU_ARCH}")
+# else()
+#     message(WARNING "Could not detect GPU architecture, defaulting to compute_80 and sm_80")
+#     set(COMPUTE_CAPABILITY "compute_80")
+#     set(SM_CAPABILITY "sm_80")
+# endif()
+
 if(GPU_ARCH)
-    set(COMPUTE_CAPABILITY "compute_${GPU_ARCH}")
-    set(SM_CAPABILITY "sm_${GPU_ARCH}")
+  set(CMAKE_CUDA_ARCHITECTURES ${GPU_ARCH})
 else()
-    message(WARNING "Could not detect GPU architecture, defaulting to compute_80 and sm_80")
-    set(COMPUTE_CAPABILITY "compute_80")
-    set(SM_CAPABILITY "sm_80")
+  set(CMAKE_CUDA_ARCHITECTURES 80)
 endif()
 
 message(STATUS "Detected GPU architecture: ${GPU_ARCH}")
@@ -85,10 +91,20 @@ target_include_directories(gtc2020_tensorcore_primer PRIVATE
     ${GOOGLETEST_INCLUDE_DIR}
 )
 
+# Add TMA_1D_arrays_7_29_1 example
+add_executable(TMA_1D_arrays_7_29_1 TMA_1D_arrays_7_29_1.cu)
+
+target_include_directories(TMA_1D_arrays_7_29_1 PRIVATE
+    ${CUTLASS_INCLUDE_DIR}
+    ${CMAKE_SOURCE_DIR}/cutlass/tools/util/include
+    ${CMAKE_SOURCE_DIR}/cutlass/test/unit/gemm/device
+    ${GOOGLETEST_INCLUDE_DIR}
+)
+
 # Set CUDA architecture flags dynamically
-foreach(target binary_instrumentation halfA_int8_mixed sgemm_sm80_cris gtc2020_tensorcore_primer)
+foreach(target binary_instrumentation halfA_int8_mixed sgemm_sm80_cris gtc2020_tensorcore_primer TMA_1D_arrays_7_29_1)
     target_compile_options(${target} PRIVATE
-        $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr -arch=${COMPUTE_CAPABILITY} -code=${SM_CAPABILITY} -lineinfo --verbose --keep>
+        $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr -lineinfo --verbose --keep>
     )
 endforeach()
 

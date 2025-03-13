@@ -65,9 +65,9 @@ __global__ void add_one_kernel(int* data, size_t offset)
     // 7. Wait for TMA transfer to have finished reading shared memory.
     // Create a "bulk async-group" out of the previous bulk copy operation.
     // ptx::cp_async_bulk_commit_group();
-    asm volatile("cp.async.bulk.commit_group");
+    asm volatile("cp.async.bulk.commit_group;");
     // Wait for the group to have completed reading from shared memory.
-    asm volatile("cp.async.bulk.wait_group.read 0");
+    asm volatile("cp.async.bulk.wait_group.read 0;");
     // ptx::cp_async_bulk_wait_group_read(ptx::n32_t<0>());
   }
 }
@@ -88,7 +88,7 @@ int main() {
   add_one_kernel<<<blocksPerGrid, threadsPerBlock>>>(d_a, offset);
   cudaMemcpy(h_a, d_a, N * sizeof(int), cudaMemcpyHostToDevice);
 
-  for (int i = 2048, i < (2048 + 1024); i++) {
+  for (int i = 2048; i < (2048 + 1024); i++) {
     assert(h_a[i] == 7);
   }
   return 0;

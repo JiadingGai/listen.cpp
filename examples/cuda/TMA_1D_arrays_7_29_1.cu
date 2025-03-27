@@ -7,6 +7,7 @@ using barrier = cuda::barrier<cuda::thread_scope_block>;
 static constexpr size_t buf_len = 1024;
 __global__ void add_one_kernel(int* data, size_t offset)
 {
+#if (defined(__CUDA_ARCH__) and (__CUDA_ARCH__ >= 900))
   // Shared memory buffer. The destination shared memory buffer of
   // a bulk operations should be 16 byte aligned.
   __shared__ alignas(16) int smem_data[buf_len];
@@ -70,6 +71,7 @@ __global__ void add_one_kernel(int* data, size_t offset)
     asm volatile("cp.async.bulk.wait_group.read 0;");
     // ptx::cp_async_bulk_wait_group_read(ptx::n32_t<0>());
   }
+#endif
 }
 
 int main() {

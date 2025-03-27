@@ -108,3 +108,19 @@ foreach(target binary_instrumentation halfA_int8_mixed sgemm_sm80_cris gtc2020_t
     )
 endforeach()
 
+# Add cuda_graph_ptx example (C++, compiled with g++)
+add_executable(cuda_graph_ptx cuda_graph_ptx.cpp)
+set_target_properties(cuda_graph_ptx PROPERTIES
+    CXX_STANDARD 17
+    LINKER_LANGUAGE CXX  # Force C++ linker (g++) instead of nvcc
+)
+target_include_directories(cuda_graph_ptx PRIVATE
+    ${CUDAToolkit_INCLUDE_DIRS}  # Typically /usr/local/cuda/include
+)
+target_link_directories(cuda_graph_ptx PRIVATE
+    ${CUDAToolkit_LIBRARY_DIR}   # Typically /usr/local/cuda/lib64
+)
+target_link_libraries(cuda_graph_ptx PRIVATE
+    cuda  # Links libcuda.so (Driver API)
+)
+

@@ -85,7 +85,11 @@ int main() {
   int threadsPerBlock = 256;
   int blocksPerGrid = 4;
   int offset = 2048;
+#if (defined(__CUDA_ARCH__) and (__CUDA_ARCH__ >= 900))
   add_one_kernel<<<blocksPerGrid, threadsPerBlock>>>(d_a, offset);
+#else
+  assert(false && "TMA is only available on sm_90a.");
+#endif
   cudaMemcpy(h_a, d_a, N * sizeof(int), cudaMemcpyHostToDevice);
 
   for (int i = 2048; i < (2048 + 1024); i++) {
